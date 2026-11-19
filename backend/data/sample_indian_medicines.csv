@@ -1,0 +1,27 @@
+id,name,manufacturer_name,short_composition1,short_composition2
+1,Dolo 650 Tablet,Micro Labs Ltd,Paracetamol (650mg),
+2,Calpol 500 Tablet,GlaxoSmithKline Pharmaceuticals Ltd,Paracetamol (500mg),
+3,Crocin 650 Advance Tablet,GlaxoSmithKline Pharmaceuticals Ltd,Paracetamol (650mg),
+4,Combiflam Tablet,Sanofi India Ltd,Ibuprofen (400mg),Paracetamol (325mg)
+5,Brufen 400 Tablet,Abbott Healthcare Pvt Ltd,Ibuprofen (400mg),
+6,Telmikind-AM Tablet,Mankind Pharma Ltd,Telmisartan (40mg),Amlodipine (5mg)
+7,Telma 40 Tablet,Glenmark Pharmaceuticals Ltd,Telmisartan (40mg),
+8,Telma-H Tablet,Glenmark Pharmaceuticals Ltd,Telmisartan (40mg),Hydrochlorothiazide (12.5mg)
+9,Amlong 5 Tablet,Micro Labs Ltd,Amlodipine (5mg),
+10,Ecosprin 75 Tablet,USV Ltd,Aspirin (75mg),
+11,Ecosprin-AV 75/20 Capsule,USV Ltd,Aspirin (75mg),Atorvastatin (20mg)
+12,Atorva 20 Tablet,Zydus Cadila,Atorvastatin (20mg),
+13,Pan 40 Tablet,Alkem Laboratories Ltd,Pantoprazole (40mg),
+14,Pan-D Capsule,Alkem Laboratories Ltd,Pantoprazole (40mg),Domperidone (30mg)
+15,Augmentin 625 Duo Tablet,GlaxoSmithKline Pharmaceuticals Ltd,Amoxicillin (500mg),Clavulanic Acid (125mg)
+16,Moxikind-CV 625 Tablet,Mankind Pharma Ltd,Amoxicillin (500mg),Clavulanic Acid (125mg)
+17,Glycomet 500 Tablet,USV Ltd,Metformin (500mg),
+18,Glycomet-GP 1 Tablet,USV Ltd,Metformin (500mg),Glimepiride (1mg)
+19,Amaryl 1mg Tablet,Sanofi India Ltd,Glimepiride (1mg),
+20,Warf 5mg Tablet,Cipla Ltd,Warfarin (5mg),
+21,Ciplox 500 Tablet,Cipla Ltd,Ciprofloxacin (500mg),
+22,Azithral 500 Tablet,Alembic Pharmaceuticals Ltd,Azithromycin (500mg),
+23,Montek-LC Tablet,Sun Pharmaceutical Industries Ltd,Montelukast (10mg),Levocetirizine (5mg)
+24,Rosuvas 10 Tablet,Sun Pharmaceutical Industries Ltd,Rosuvastatin (10mg),
+25,Clopilet 75 Tablet,Sun Pharmaceutical Industries Ltd,Clopidogrel (75mg),
+

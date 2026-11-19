@@ -29,9 +29,9 @@ async def lifespan(app: FastAPI):
     Loads heavy ML models into memory so they persist across all requests.
     Without this, each request would re-load ~400MB of models = 10-15s delay.
     """
-    print("🚀 Starting up — loading models...")
+    print("Starting up — loading models...")
 
-    # ── Load EasyOCR reader (English) ──
+    #  Load EasyOCR reader (English) 
     # Lazy import: only loads the library when the server starts
     import easyocr
     app.state.ocr_reader = easyocr.Reader(
@@ -41,14 +41,14 @@ async def lifespan(app: FastAPI):
     )
     print("✅ EasyOCR loaded")
 
-    # ── Load SentenceTransformer for local embeddings ──
+    #  Load SentenceTransformer for local embeddings
     from sentence_transformers import SentenceTransformer
     app.state.embedder = SentenceTransformer(settings.embedding_model)
-    print(f"✅ SentenceTransformer ({settings.embedding_model}) loaded")
+    print(f"SentenceTransformer ({settings.embedding_model}) loaded")
 
     # ── Initialize Supabase client ──
     app.state.supabase = get_supabase_client()
-    print("✅ Supabase client initialized")
+    print("Supabase client initialized")
 
     # ── Check if Ollama is reachable ──
     try:
@@ -56,21 +56,21 @@ async def lifespan(app: FastAPI):
             resp = await client.get(f"{settings.ollama_base_url}/api/tags")
             resp.raise_for_status()
             app.state.ollama_available = True
-            print(f"✅ Ollama is running ({settings.ollama_base_url})")
+            print(f"Ollama is running ({settings.ollama_base_url})")
     except Exception:
         app.state.ollama_available = False
-        print(f"⚠️  Ollama not reachable at {settings.ollama_base_url} — will use template fallback")
+        print(f"Ollama not reachable at {settings.ollama_base_url} — will use template fallback")
 
-    print("🟢 All models loaded. Server is ready.\n")
+    print("All models loaded. Server is ready.\n")
 
-    yield  # ← Server runs and handles requests here
+    yield  # Server runs and handles requests here
 
-    # ── Shutdown cleanup ──
-    print("🔴 Shutting down...")
+    #  Shutdown cleanup 
+    print("Shutting down...")
     # Models are garbage collected automatically
 
 
-# ── Create the FastAPI app ──
+# Create the FastAPI app 
 
 app = FastAPI(
     title=settings.app_name,
@@ -79,7 +79,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── CORS middleware (allow Next.js frontend to call us) ──
+# CORS middleware (allow Next.js frontend to call us) 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -92,7 +92,7 @@ app.add_middleware(
 )
 
 
-# ── Health check endpoint ──
+#  Health check endpoint 
 
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health_check():
