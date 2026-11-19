@@ -24,6 +24,10 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Data files (keep samples, ignore raw large CSVs)
+backend/data/*.csv
+!backend/data/sample_*.csv
+
 # Models (downloaded at runtime)
 *.bin
 *.onnx
@@ -34,3 +38,7 @@ node_modules/
 .next/
 **/.next/
 
+
+# Ignore scripts folder
+backend/scripts/
+**/scripts/
