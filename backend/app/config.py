@@ -42,7 +42,7 @@ class Settings(BaseSettings):
 
     # ── Brand Lookup ──
     # Fuzzy matching threshold for pg_trgm (0.0 to 1.0, higher = stricter)
-    brand_similarity_cutoff: float = 0.3
+    brand_similarity_cutoff: float = 0.55
 
     model_config = {
         "env_file": ".env",

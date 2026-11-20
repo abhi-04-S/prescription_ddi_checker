@@ -28,6 +28,9 @@ Thumbs.db
 backend/data/*.csv
 !backend/data/sample_*.csv
 
+# scripts
+backend/scripts/
+
 # Models (downloaded at runtime)
 *.bin
 *.onnx
@@ -38,7 +41,3 @@ node_modules/
 .next/
 **/.next/
 
-
-# Ignore scripts folder
-backend/scripts/
-**/scripts/
