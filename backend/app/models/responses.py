@@ -89,6 +89,22 @@ class SafetyReportResponse(BaseModel):
         default_factory=list,
         description="Salts that conflict with user's known allergies"
     )
+    fdc_notes: list[str] = Field(
+        default_factory=list,
+        description="Fixed-Dose Combination notes (co-formulated salts in one tablet)"
+    )
+    resolved_medicines: list[ResolvedMedicine] = Field(
+        default_factory=list,
+        description="All medicines resolved to their generic salts"
+    )
+    unresolved_medicines: list[str] = Field(
+        default_factory=list,
+        description="Medicine lines that could not be resolved"
+    )
+    synthesis_mode: str = Field(
+        default="deterministic_safe",
+        description="'deterministic_safe', 'ollama_phi35', or 'template_fallback'"
+    )
     disclaimer: str = "This is an informational tool, not medical advice. Always consult your doctor."
 
 

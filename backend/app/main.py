@@ -2,12 +2,15 @@
 FastAPI application entry point.
 
 Key architecture decisions:
-  1. Lifespan context manager loads EasyOCR + SentenceTransformer ONCE at startup
+  1. Lifespan context manager loads SentenceTransformer ONCE at startup
      (not per-request) → saves ~10-15 seconds per request.
-  2. Models stored in app.state → accessible from any endpoint via request.app.state.
-  3. Supabase client also initialized once at startup.
-  4. Ollama is NOT loaded here — it runs as a separate process and we call its
+  2. EasyOCR is NOT preloaded here — lazy-loaded in Phase 1 vision_ocr.py
+     to save ~1 GB RAM during Phase 4 development.
+  3. Models stored in app.state → accessible from any endpoint via request.app.state.
+  4. Supabase client also initialized once at startup.
+  5. Ollama is NOT loaded here — it runs as a separate process and we call its
      REST API on-demand. We just check if it's reachable at startup.
+  6. torch.set_num_threads(4) caps PyTorch CPU threads so embeddings don't freeze.
 """
 
 import httpx
@@ -26,29 +29,31 @@ async def lifespan(app: FastAPI):
     """
     Runs once at server startup (before first request) and once at shutdown.
 
-    Loads heavy ML models into memory so they persist across all requests.
-    Without this, each request would re-load ~400MB of models = 10-15s delay.
+    Loads SentenceTransformer into memory so it persists across all requests.
+    EasyOCR is lazy-loaded in vision_ocr.py on first /upload request.
     """
     print("Starting up — loading models...")
 
-    #  Load EasyOCR reader (English) 
-    # Lazy import: only loads the library when the server starts
-    import easyocr
-    app.state.ocr_reader = easyocr.Reader(
-        ["en"],
-        gpu=settings.ocr_gpu,
-        verbose=False,
-    )
-    print("✅ EasyOCR loaded")
+    # ── Cap PyTorch CPU threads to prevent machine freeze ──
+    try:
+        import torch
+        torch.set_num_threads(4)
+        print(f"✅ PyTorch CPU threads capped at {torch.get_num_threads()}")
+    except ImportError:
+        print("⚠️ PyTorch not installed — thread cap skipped")
 
-    #  Load SentenceTransformer for local embeddings
+    # ── EasyOCR: NOT preloaded (lazy-load in Phase 1 to save ~1 GB RAM) ──
+    app.state.ocr_reader = None  # Will be lazy-loaded by vision_ocr.py
+    print("ℹ️ EasyOCR deferred (lazy-load on first /upload)")
+
+    # ── Load SentenceTransformer for local embeddings ──
     from sentence_transformers import SentenceTransformer
     app.state.embedder = SentenceTransformer(settings.embedding_model)
-    print(f"SentenceTransformer ({settings.embedding_model}) loaded")
+    print(f"✅ SentenceTransformer ({settings.embedding_model}) loaded")
 
     # ── Initialize Supabase client ──
     app.state.supabase = get_supabase_client()
-    print("Supabase client initialized")
+    print("✅ Supabase client initialized")
 
     # ── Check if Ollama is reachable ──
     try:
@@ -56,21 +61,21 @@ async def lifespan(app: FastAPI):
             resp = await client.get(f"{settings.ollama_base_url}/api/tags")
             resp.raise_for_status()
             app.state.ollama_available = True
-            print(f"Ollama is running ({settings.ollama_base_url})")
+            print(f"✅ Ollama is running ({settings.ollama_base_url})")
     except Exception:
         app.state.ollama_available = False
-        print(f"Ollama not reachable at {settings.ollama_base_url} — will use template fallback")
+        print(f"⚠️ Ollama not reachable at {settings.ollama_base_url} — will use template fallback")
 
-    print("All models loaded. Server is ready.\n")
+    print("\nAll models loaded. Server is ready.\n")
 
     yield  # Server runs and handles requests here
 
-    #  Shutdown cleanup 
+    # ── Shutdown cleanup ──
     print("Shutting down...")
     # Models are garbage collected automatically
 
 
-# Create the FastAPI app 
+# ── Create the FastAPI app ──
 
 app = FastAPI(
     title=settings.app_name,
@@ -79,7 +84,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware (allow Next.js frontend to call us) 
+# ── CORS middleware (allow Next.js frontend to call us) ──
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -91,21 +96,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Mount routers ──
+from app.routers.prescription import router as prescription_router  # noqa: E402
+app.include_router(prescription_router)
 
-#  Health check endpoint 
+
+# ── Health check endpoint ──
 
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health_check():
     """
     Quick health check. Verifies:
       - Server is running
-      - ML models are loaded in memory
+      - ML models are loaded in memory (embedder required, OCR optional)
       - Ollama is reachable (optional)
     """
-    models_loaded = (
-        hasattr(app.state, "ocr_reader")
-        and hasattr(app.state, "embedder")
-        and app.state.ocr_reader is not None
+    embedder_loaded = (
+        hasattr(app.state, "embedder")
         and app.state.embedder is not None
     )
 
@@ -119,9 +126,9 @@ async def health_check():
         pass
 
     return HealthResponse(
-        status="ok" if models_loaded else "degraded",
+        status="ok" if embedder_loaded else "degraded",
         version=settings.app_version,
-        models_loaded=models_loaded,
+        models_loaded=embedder_loaded,
         ollama_available=ollama_ok,
     )
 

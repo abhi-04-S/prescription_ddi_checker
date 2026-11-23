@@ -85,6 +85,17 @@ TRAILING_FORM_PATTERN = re.compile(
 # 2. TEXT CLEANING FUNCTIONS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def fix_ocr_lookalikes(text: str) -> str:
+    """
+    Substitutes common OCR numeral-for-letter confusions inside word tokens:
+      '1' -> 'l' when surrounded by letters (e.g. 'Do1o' -> 'Dolo')
+      '0' -> 'o' when surrounded by letters (e.g. 'D0lo' -> 'Dolo')
+    """
+    t = re.sub(r"(?<=[a-zA-Z])1(?=[a-zA-Z])", "l", text)
+    t = re.sub(r"(?<=[a-zA-Z])0(?=[a-zA-Z])", "o", t)
+    return t
+
+
 def clean_prescription_text(raw_text: str) -> tuple[str, str | None]:
     """
     Cleans a raw prescription line by stripping dosage forms, duration,
@@ -128,6 +139,7 @@ def clean_prescription_text(raw_text: str) -> tuple[str, str | None]:
 
     # Brand query keeps full text including strength and combo suffixes (e.g. "Duo")
     brand_query = re.sub(r"\s+", " ", text).strip()
+    brand_query = fix_ocr_lookalikes(brand_query)
 
     return (brand_query, extracted_strength)
 
